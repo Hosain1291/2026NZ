@@ -1,873 +1,391 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>2026 뉴질랜드 총선 예측</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026년 뉴질랜드 총선 시뮬레이터</title>
 
-  <!-- 반응형 웹을 위한 Viewport 메타 태그 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CSS for basic structure -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  <style>
-    /* ✅ Danjo-bold-Regular 폰트 관련 코드 제거됨 */
-
-    /* ✅ Paperlogy-8ExtraBold 폰트 추가 */
-    @font-face {
-        font-family: 'Paperlogy-8ExtraBold';
-        src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');
-        font-weight: 800;
-        font-style: normal;
-    }
-
-    /* Paperlogy-8ExtraBold 글로벌 적용 */
-    body {
-      font-family: 'Paperlogy-8ExtraBold', sans-serif; /* 폰트 변경 및 대체 폰트 지정 */
-      background: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
-
-    /* 배경 이미지만을 위한 별도의 div */
-    .background-image-blur {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        /* 뉴질랜드 국회의사당 이미지 예시 URL */
-        background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Parliament_House%2C_Wellington%2C_New_Zealand.jpg/1920px-Parliament_House%2C_Wellington%2C_New_Zealand.jpg');
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-attachment: fixed;
-        filter: blur(15px); /* 흐림 효과 15px (대략 30% 흐림) */
-        -webkit-filter: blur(15px);
-        z-index: -1;
-    }
-
-    /* 모든 UI 콘텐츠를 담을 래퍼 */
-    .content-wrapper {
-        position: relative;
-        z-index: 1;
-        padding: 30px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    h2, h3 {
-      text-align: center;
-      margin-bottom: 20px;
-      width: 100%;
-      max-width: 900px;
-    }
-
-    .party-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-      margin-bottom: 30px;
-      width: 100%;
-      max-width: 900px;
-      box-sizing: border-box;
-      padding: 0 15px;
-    }
-
-    .party-card {
-      width: 130px;
-      height: 130px;
-      border-radius: 12px;
-      background: #333;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    /* 입력란 스타일 수정: 배경색과 글자색 및 폰트 적용 */
-    .party-card input {
-      font-family: 'Paperlogy-8ExtraBold', sans-serif; /* 폰트 적용 */
-      width: 60px;
-      text-align: center;
-      font-size: 18px;
-      margin: 6px 0;
-      border-radius: 4px;
-      border: none;
-      padding: 4px;
-      color: rgba(255, 255, 255, 0.75);
-      transition: color 0.2s ease-in-out;
-    }
-
-    /* 입력란에 포커스될 때 글자 투명도 제거 */
-    .party-card input:focus {
-        color: white;
-        outline: none;
-    }
-
-    .calculate-button {
-      font-family: 'Paperlogy-8ExtraBold', sans-serif; /* 폰트 적용 */
-      display: block;
-      margin: 0 auto 30px;
-      padding: 14px 40px;
-      font-size: 16px;
-      font-weight: bold;
-      background: #004c47;
-      color: white;
-      border: none;
-      border-radius: 30px;
-      cursor: pointer;
-      width: 100%;
-      max-width: 900px;
-      box-sizing: border-box;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      margin-bottom: 30px;
-      font-size: 14px;
-      margin-left: auto;
-      margin-right: auto;
-      max-width: 900px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 6px 8px;
-      text-align: center;
-    }
-
-    th {
-      background: #eee;
-    }
-
-    .winner {
-      font-weight: bold;
-      background: #d0ffd0;
-    }
-
-    .dot {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin-right: 5px;
-      vertical-align: middle;
-    }
-
-    /* New styles for Seat Projection */
-    .seat-projection-container {
-      width: 100%;
-      max-width: 900px;
-      background-color: #e0e0e0;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      margin-top: 30px;
-      margin-bottom: 30px;
-      box-sizing: border-box;
-    }
-
-    .seat-projection-title {
-        font-size: 1.8em;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 20px;
-        color: #333;
-    }
-
-    .seat-projection-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-    }
-
-    .projection-party-card {
-      width: 140px;
-      height: 120px;
-      border-radius: 12px;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      text-align: center;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-
-    .projection-party-name {
-      font-size: 1.1em;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-    }
-
-    .projection-seats {
-      font-size: 2.5em;
-      line-height: 1;
-      margin-bottom: 5px;
-    }
-
-    .projection-percentage {
-        font-size: 0.9em;
-        color: rgba(255, 255, 255, 0.9);
-        margin-top: -3px;
-    }
-
-    .projection-change {
-        font-size: 0.9em;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    /* 막대 그래프 스타일 */
-    .seat-bar-container {
-        width: 100%;
-        height: 25px;
-        background-color: #ccc;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-top: 25px;
-        display: flex;
-    }
-
-    .seat-bar-segment {
-        height: 100%;
-    }
-
-    /* Individual Constituency Results 섹션 */
-    .constituency-results {
-        width: 100%;
-        max-width: 900px;
-        background-color: #e0e0e0;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        margin-top: 30px;
-        box-sizing: border-box;
-        text-align: center;
-    }
-
-    .constituency-results h3 {
-        margin-top: 0;
-    }
-
-    .constituency-select-container {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-    }
-
-    /* 드롭다운에도 Paperlogy 폰트 적용 */
-    .constituency-select-container select {
-        font-family: 'Paperlogy-8ExtraBold', sans-serif; /* 폰트 적용 */
-        width: 80%;
-        max-width: 400px;
-        padding: 8px 12px;
-        font-size: 1em;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        appearance: none;
-        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.2-6.5H18.6c-5%200-9.3%201.8-12.9%205.5-3.8%203.7-5.7%208-5.7%2012.9v120.9c0%204.9%201.9%209.2%205.7%2012.9%203.6%203.7%207.9%205.5%2012.9%205.5h255.2c5%200%209.3-1.8%2012.9-5.5%203.8-3.7%205.7-8%205.7-12.9z%22%2F%3E%3C%2Fsvg%3E');
-        background-repeat: no-repeat;
-        background-position: right 8px center;
-        background-size: 12px;
-        cursor: pointer;
-    }
-
-    .constituency-detail {
-        font-family: 'Paperlogy-8ExtraBold', sans-serif; /* 폰트 적용 */
-        margin-top: 15px;
-        font-size: 0.95em;
-        color: #555;
-    }
-    .constituency-detail ul {
-        list-style: none;
-        padding: 0;
-        margin: 10px 0;
-        text-align: left;
-    }
-    .constituency-detail ul li {
-        margin-bottom: 5px;
-        padding: 3px 0;
-    }
-    .constituency-detail ul li .dot {
-        vertical-align: middle;
-    }
-
-    /* 모바일용 미디어 쿼리 */
-    @media (max-width: 768px) {
-        .content-wrapper {
-            padding: 15px;
-        }
-        .party-card {
-            width: 100px;
-            height: 100px;
-            font-size: 0.9em;
-        }
-        .party-card input {
-            width: 50px;
-            font-size: 16px;
-        }
-        .calculate-button {
-            padding: 10px 20px;
-            font-size: 14px;
-        }
-        .projection-party-card {
-            width: 120px;
-            height: 100px;
-        }
-        .projection-seats {
-            font-size: 2em;
-        }
-        table {
-            font-size: 12px;
-        }
-        th, td {
-            padding: 4px 6px;
-        }
-    }
-  </style>
-</head>
-
-<body>
-  <div class="background-image-blur"></div>
-
-  <div class="content-wrapper">
-    <h2>🗳️ 2026 뉴질랜드 총선 예측</h2>
-
-    <div class="party-grid" id="partyGrid"></div>
-    <button class="calculate-button" onclick="runPrediction()">의석 및 결과 계산</button>
-
-    <div class="seat-projection-container">
-      <div class="seat-projection-title">예측 의석</div>
-      <div class="seat-projection-grid" id="seatProjectionGrid"></div>
-      <div class="seat-bar-container" id="seatBarContainer"></div>
-    </div>
-
-    <h3>📍 지역별 예측</h3>
-    <div id="districtResults"></div>
-
-    <div class="constituency-results">
-      <h3>개별 선거구 결과</h3>
-      <div class="constituency-select-container">
-        <select onchange="showConstituencyDetail(this.value)">
-          <option value="">선거구를 검색하거나 선택하세요...</option>
-          </select>
-      </div>
-      <div class="constituency-detail" id="constituencyDetail">
-        자세한 분석을 보려면 선거구를 선택하세요.
-      </div>
-    </div>
-  </div>
-  <script>
-    const TOTAL_SEATS = 120; // 뉴질랜드 의회 총 의석수 (120석)
-    const ELECTORAL_THRESHOLD = 5; // 뉴질랜드 봉쇄 조항 5% 또는 1석 이상 당선
-
-    // 뉴질랜드 정당 데이터 (제공된 이미지 및 일반적인 정보 기반)
-    const parties = [
-      { id: "lab", name: "Labour", color: "#E4002B", vote: 30, regionOnly: null }, // Labour Party (빨강)
-      { id: "nat", name: "National", color: "#00529F", vote: 35, regionOnly: null }, // National Party (파랑)
-      { id: "grn", name: "Green", color: "#09813E", vote: 10, regionOnly: null }, // Green Party (초록)
-      { id: "act", name: "ACT", color: "#FFD700", vote: 8, regionOnly: null }, // ACT Party (노랑)
-      { id: "tpm", name: "Te Pāti Māori", color: "#8B0000", vote: 2, regionOnly: "maori" }, // Te Pāti Māori (짙은 빨강/마룬), 마오리 선거구 특화
-      { id: "nzf", name: "NZ First", color: "#000000", vote: 4, regionOnly: null }, // New Zealand First (검정)
-      { id: "top", name: "TOP", color: "#FF4500", vote: 1.5, regionOnly: null }, // The Opportunities Party (주황)
-      { id: "dnz", name: "DemocracyNZ", color: "#4169E1", vote: 0.8, regionOnly: null }, // DemocracyNZ (로얄 블루)
-      { id: "fnz", name: "Freedoms NZ", color: "#800080", vote: 0.5, regionOnly: null }, // Freedoms NZ (보라)
-      { id: "vnz", name: "Vision NZ", color: "#3CB371", vote: 0.3, regionOnly: null }, // Vision NZ (중간 초록)
-      { id: "leap", name: "Leap", color: "#FF69B4", vote: 0.2, regionOnly: null } // Leap (핫 핑크)
-    ];
-
-// 뉴질랜드 선거구 데이터 (일반 선거구 65개 + 마오리 선거구 7개 = 총 72개 선거구, 각 1석)
-// 총 의석수는 120석이지만, 지역구 의석은 72석이며 나머지는 비례대표로 채워집니다.
-const districts = [
-    // 일반 선거구 (65개)
-    { id: 1, name: "Auckland Central", seats: 1, type: "general" },
-    { id: 2, name: "Bay of Plenty", seats: 1, type: "general" },
-    { id: 3, name: "Botany", seats: 1, type: "general" },
-    { id: 4, name: "Coromandel", seats: 1, type: "general" },
-    { id: 5, name: "East Coast", seats: 1, type: "general" },
-    { id: 6, name: "East Coast Bays", seats: 1, type: "general" },
-    { id: 7, name: "Epsom", seats: 1, type: "general" },
-    { id: 8, name: "Hamilton East", seats: 1, type: "general" },
-    { id: 9, name: "Hamilton West", seats: 1, type: "general" },
-    { id: 10, name: "Hutt South", seats: 1, type: "general" },
-    { id: 11, name: "Kaipara ki Mahurangi", seats: 1, type: "general" },
-    { id: 12, name: "Kelston", seats: 1, type: "general" },
-    { id: 13, name: "Mana", seats: 1, type: "general" },
-    { id: 14, name: "Māngere", seats: 1, type: "general" },
-    { id: 15, name: "Manurewa", seats: 1, type: "general" },
-    { id: 16, name: "Maungakiekie", seats: 1, type: "general" },
-    { id: 17, name: "Mt Albert", seats: 1, type: "general" },
-    { id: 18, name: "Mt Roskill", seats: 1, type: "general" },
-    { id: 19, name: "Napier", seats: 1, type: "general" },
-    { id: 20, name: "New Lynn", seats: 1, type: "general" },
-    { id: 21, name: "New Plymouth", seats: 1, type: "general" },
-    { id: 22, name: "North Shore", seats: 1, type: "general" },
-    { id: 23, name: "Northcote", seats: 1, type: "general" },
-    { id: 24, name: "Northland", seats: 1, type: "general" },
-    { id: 25, name: "Ōhāriu", seats: 1, type: "general" },
-    { id: 26, name: "Ōtaki", seats: 1, type: "general" },
-    { id: 27, name: "Pakuranga", seats: 1, type: "general" },
-    { id: 28, name: "Palmerston North", seats: 1, type: "general" },
-    { id: 29, name: "Panmure-Ōtāhuhu", seats: 1, type: "general" },
-    { id: 30, name: "Papakura", seats: 1, type: "general" },
-    { id: 31, name: "Port Waikato", seats: 1, type: "general" },
-    { id: 32, name: "Rangitīkei", seats: 1, type: "general" },
-    { id: 33, name: "Remutaka", seats: 1, type: "general" },
-    { id: 34, name: "Rongotai", seats: 1, type: "general" },
-    { id: 35, name: "Rotorua", seats: 1, type: "general" },
-    { id: 36, name: "Takanini", seats: 1, type: "general" },
-    { id: 37, name: "Tāmaki", seats: 1, type: "general" },
-    { id: 38, name: "Taranaki-King Country", seats: 1, type: "general" },
-    { id: 39, name: "Taupō", seats: 1, type: "general" },
-    { id: 40, name: "Tauranga", seats: 1, type: "general" },
-    { id: 41, name: "Te Atatū", seats: 1, type: "general" },
-    { id: 42, name: "Tukituki", seats: 1, type: "general" },
-    { id: 43, name: "Upper Harbour", seats: 1, type: "general" },
-    { id: 44, name: "Waikato", seats: 1, type: "general" },
-    { id: 45, name: "Wairarapa", seats: 1, type: "general" },
-    { id: 46, name: "Wellington Central", seats: 1, type: "general" },
-    { id: 47, name: "Whanganui", seats: 1, type: "general" },
-    { id: 48, name: "Whangaparāoa", seats: 1, type: "general" },
-    { id: 49, name: "Whangārei", seats: 1, type: "general" },
-    { id: 50, name: "Banks Peninsula", seats: 1, type: "general" },
-    { id: 51, name: "Christchurch Central", seats: 1, type: "general" },
-    { id: 52, name: "Christchurch East", seats: 1, type: "general" },
-    { id: 53, name: "Dunedin", seats: 1, type: "general" },
-    { id: 54, name: "Ilam", seats: 1, type: "general" },
-    { id: 55, name: "Invercargill", seats: 1, type: "general" },
-    { id: 56, name: "Kaikōura", seats: 1, type: "general" },
-    { id: 57, name: "Nelson", seats: 1, type: "general" },
-    { id: 58, name: "Rangitata", seats: 1, type: "general" },
-    { id: 59, name: "Selwyn", seats: 1, type: "general" },
-    { id: 60, name: "Southland", seats: 1, type: "general" },
-    { id: 61, name: "Taieri", seats: 1, type: "general" },
-    { id: 62, name: "Waimakariri", seats: 1, type: "general" },
-    { id: 63, name: "Waitaki", seats: 1, type: "general" },
-    { id: 64, name: "West Coast-Tasman", seats: 1, type: "general" },
-    { id: 65, name: "Wigram", seats: 1, type: "general" },
-
-    // 마오리 선거구 (7개)
-    { id: 66, name: "Hauraki-Waikato", seats: 1, type: "maori" },
-    { id: 67, name: "Ikaroa-Rāwhiti", seats: 1, type: "maori" },
-    { id: 68, name: "Tāmaki Makaurau", seats: 1, type: "maori" },
-    { id: 69, name: "Te Tai Hauāuru", seats: 1, type: "maori" },
-    { id: 70, name: "Te Tai Tokerau", seats: 1, type: "maori" },
-    { id: 71, name: "Te Tai Tonga", seats: 1, type: "maori" },
-    { id: 72, name: "Waiariki", seats: 1, type: "maori" }
-];
-
-    // 구역 드롭다운 채우기
-    function populateConstituencyDropdown() {
-        const select = document.querySelector('.constituency-select-container select');
-        districts.forEach(district => {
-            const option = document.createElement('option');
-            option.value = district.id;
-            // 마오리 선거구는 이름 뒤에 (마오리)를 붙여 구분
-            option.textContent = district.name + (district.type === "maori" ? " (마오리)" : "");
-            select.appendChild(option);
-        });
-    }
-
-    // 구역 상세 정보 표시: 정당별 득표율을 표시하도록 수정
-    function showConstituencyDetail(districtId) {
-        const detailDiv = document.getElementById('constituencyDetail');
-        if (districtId === "") {
-            detailDiv.innerHTML = "자세한 분석을 보려면 선거구를 선택하세요.";
-            return;
+    <style>
+        /* Custom Font */
+        @font-face {
+            font-family: 'Pretendard-Regular';
+            src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+            font-weight: 400;
+            font-style: normal;
         }
 
-        const selectedDistrict = districts.find(d => d.id == districtId);
-        if (!selectedDistrict) {
-            detailDiv.innerHTML = "선거구를 찾을 수 없습니다.";
-            return;
+        /* Global Styles */
+        body {
+            font-family: 'Pretendard-Regular', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 2rem 1rem;
         }
-
-        let rawVotes = {}, totalDistrictVotes = 0;
-
-        parties.forEach(p => {
-          let shouldInclude = true;
-          // 마오리 선거구에 마오리당만 득표를 얻도록 제한
-          if (p.regionOnly === "maori" && selectedDistrict.type !== "maori") {
-              shouldInclude = false;
-          }
-          // 일반 정당은 마오리 선거구에서도 득표 가능
-          if (p.regionOnly === null && selectedDistrict.type === "maori" && p.id === "tpm") {
-            // 마오리 선거구에서 마오리당이 아닌 일반 정당의 득표율을 낮추는 등 조정 가능.
-            // 현재는 마오리당의 vote 값을 그대로 사용.
-          }
-
-
-          if (shouldInclude) {
-            const partyObj = parties.find(party => party.id === p.id);
-            const noise = (Math.random() * 10 - 5);
-            const raw = Math.max(0, partyObj.vote + noise);
-            rawVotes[p.id] = raw;
-            totalDistrictVotes += raw;
-          }
-        });
-
-        let normalized = {};
-        for (let pid in rawVotes) {
-          normalized[pid] = (rawVotes[pid] / totalDistrictVotes) * 100;
-        }
-
-        let detailHtml = `<h4>${selectedDistrict.name} (${selectedDistrict.seats} 의석)</h4>`;
-        detailHtml += `<ul>`;
-
-        const sortedDistrictParties = Object.keys(normalized).map(pid => {
-            return {
-                party: parties.find(p => p.id === pid),
-                percentage: normalized[pid]
-            };
-        }).sort((a, b) => b.percentage - a.percentage);
-
-        sortedDistrictParties.forEach(({ party, percentage }) => {
-            detailHtml += `<li><span class="dot" style="background:${party.color}"></span> ${party.name}: ${percentage.toFixed(1)}%</li>`;
-        });
-        detailHtml += `</ul>`;
-
-        detailDiv.innerHTML = detailHtml;
-    }
-
-    function renderPartyCards() {
-      const grid = document.getElementById("partyGrid");
-      grid.innerHTML = "";
-      parties.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "party-card";
-        card.style.backgroundColor = p.color;
-        card.innerHTML = `
-          <div>${p.name}</div>
-          <input type="number" value="${p.vote}" onchange="updateVote('${p.id}', this.value)"
-                 style="background-color: ${p.color}; color: rgba(255, 255, 255, 0.75);">
-          <small>${p.regionOnly ? p.regionOnly.charAt(0).toUpperCase() + p.regionOnly.slice(1) : '전국'}</small>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function updateVote(id, value) {
-      const party = parties.find(p => p.id === id);
-      party.vote = parseFloat(value) || 0;
-    }
-
-    // 뉴질랜드 MMP 시스템에 맞춰 의석 할당 로직을 크게 변경
-    function allocateSeats(nationalPartyPercentages, totalSeatsToAllocate, nationalElectorateSeatsWonByParty) {
-        let allocatedSeats = {};
-        let totalAllocated = 0;
-
-        // 1. 봉쇄 조항을 통과한 정당만 고려
-        const qualifiedParties = parties.filter(p => {
-            // 5% 전국 득표율을 넘거나, 최소 1석의 지역구 의석을 얻은 경우 자격 부여
-            return nationalPartyPercentages[p.id] >= ELECTORAL_THRESHOLD || (nationalElectorateSeatsWonByParty[p.id] || 0) > 0;
-        });
-
-        // 2. 자격 있는 정당들의 총 득표율을 다시 정규화
-        let totalQualifiedPercentage = 0;
-        qualifiedParties.forEach(p => {
-            totalQualifiedPercentage += nationalPartyPercentages[p.id];
-        });
-
-        // 3. D'Hondt 방식을 사용하여 총 의석(TOTAL_SEATS)을 비례적으로 배분
-        let scores = [];
-        qualifiedParties.forEach(p => {
-            const recalculatedPercent = totalQualifiedPercentage > 0 ? (nationalPartyPercentages[p.id] / totalQualifiedPercentage) * 100 : 0;
-            for (let i = 0; i < totalSeatsToAllocate * 2; i++) { // 충분한 점수 생성
-                scores.push({ id: p.id, score: recalculatedPercent / (i + 1) }); // D'Hondt divisor: 1, 2, 3...
-            }
-        });
-
-        scores.sort((a, b) => b.score - a.score);
-
-        // 총 120석 배분 (MMP 시스템의 기본 120석)
-        for (let i = 0; i < TOTAL_SEATS; i++) {
-            if (scores[i]) {
-                allocatedSeats[scores[i].id] = (allocatedSeats[scores[i].id] || 0) + 1;
-            }
-        }
-
-        // 4. 지역구 의석을 먼저 배분하고, 나머지를 비례대표 의석으로 채움 (오버행 처리)
-        let finalSeats = {};
-        let totalOverhang = 0;
-        let totalListSeatsNeeded = 0;
-
-        qualifiedParties.forEach(p => {
-            const electorateSeats = nationalElectorateSeatsWonByParty[p.id] || 0;
-            const proportionalSeats = allocatedSeats[p.id] || 0; // D'Hondt로 배분된 의석
-
-            if (electorateSeats > proportionalSeats) {
-                // 오버행: 지역구 의석이 비례 의석보다 많은 경우
-                finalSeats[p.id] = electorateSeats;
-                totalOverhang += (electorateSeats - proportionalSeats);
-            } else {
-                finalSeats[p.id] = proportionalSeats;
-            }
-        });
         
-        // 최종적으로 할당된 의석의 총합을 확인
-        let currentTotalSeats = Object.values(finalSeats).reduce((sum, seats) => sum + seats, 0);
+        /* Blurred background image */
+        .background-image-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://b2bnews.co.nz/wp-content/uploads/2024/11/new_zealand_house_of_representatives_debating_chamber.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px);
+            transform: scale(1.1);
+            z-index: -1;
+        }
 
-        // MMP 시스템에서 총 의석수는 120 + 오버행 의석수
-        // 만약 현재 할당된 의석수가 목표치보다 적으면 (오버행이 없는 경우에도 120석을 채워야 함)
-        // 남은 의석을 비례적으로 채워야 합니다.
-        if (currentTotalSeats < TOTAL_SEATS + totalOverhang) {
-            const remainingSeatsToAllocate = (TOTAL_SEATS + totalOverhang) - currentTotalSeats;
+        /* Main container */
+        .content-wrapper {
+            width: 100%;
+            max-width: 700px;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1.75rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Party input cards */
+        .party-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .party-card {
+            width: 100%;
+            height: 130px;
+            border-radius: 12px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .party-card input {
+            font-family: 'Pretendard-Regular', sans-serif;
+            width: 70px;
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 0.25rem 0;
+            border-radius: 4px;
+            border: none;
+            padding: 4px;
+            color: rgba(255, 255, 255, 0.9);
+            background-color: transparent;
+            border-bottom: 2px solid rgba(255,255,255,0.5);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .party-card input:focus {
+            color: white;
+            border-bottom-color: white;
+            outline: none;
+        }
+        
+        .party-card small {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            line-height: 1.2;
+        }
+
+        /* Calculate Button */
+        .calculate-button {
+            font-family: 'Pretendard-Regular', sans-serif;
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: #00529F; /* National Party Blue */
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .calculate-button:hover {
+            background: #003c75;
+        }
+
+        /* Results Section */
+        .results-container {
+            margin-top: 2.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            visibility: hidden;
+        }
+        .results-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .seat-projection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .projection-party-card {
+            width: 100%;
+            height: 120px;
+            border-radius: 12px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+            padding: 10px;
+        }
+
+        .projection-party-name { font-size: 1.1em; margin-bottom: 5px; }
+        .projection-seats { font-size: 2.5em; line-height: 1; }
+
+        /* Bar Chart */
+        .seat-bar-container {
+            width: 100%;
+            height: 30px;
+            background-color: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 2rem;
+            display: flex;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        .seat-bar-segment {
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            overflow: hidden;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-image-blur"></div>
+    <div class="content-wrapper">
+        <h2>🗳️ 2026년 뉴질랜드 총선 시뮬레이터</h2>
+
+        <div class="party-grid" id="partyGrid">
+            <!-- Party input cards will be rendered here by JS -->
+        </div>
+
+        <button class="calculate-button" onclick="runPrediction()">결과 계산</button>
+
+        <div id="resultsContainer" class="results-container">
+            <h2 id="resultsTitle" style="font-size: 1.5rem;">예상 의석수</h2>
+            <div class="seat-projection-grid" id="seatProjectionGrid"></div>
+            <div class="seat-bar-container" id="seatBarContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const PARTIES = {
+            'nat': { name: '국민당', color: '#00529F' },
+            'lab': { name: '노동당', color: '#D82A20' },
+            'grn': { name: '녹색당', color: '#008066' },
+            'act': { name: 'ACT당', color: '#FEDC00' },
+            'nzf': { name: 'NZ 제일당', color: '#000000' },
+            'mao': { name: '마오리당', color: '#B11C33' }
+        };
+        
+        const GENERAL_ELECTORATES = 64;
+        const MAORI_ELECTORATES = 7;
+        const TOTAL_ELECTORATES = GENERAL_ELECTORATES + MAORI_ELECTORATES;
+        const PARTY_VOTE_THRESHOLD = 5.0; // 5%
+
+        // Based on recent NZ polling trends
+        const INITIAL_VOTE_SHARES = { 
+            nat: 38, 
+            lab: 29, 
+            grn: 12, 
+            act: 9, 
+            nzf: 6,
+            mao: 3, 
+        };
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPartyCards();
+        });
+
+        // --- UI SETUP ---
+        function renderPartyCards() {
+            const grid = document.getElementById("partyGrid");
+            grid.innerHTML = "";
+            Object.keys(PARTIES).forEach(key => {
+                const party = PARTIES[key];
+                const card = document.createElement("div");
+                card.className = "party-card";
+                card.style.backgroundColor = party.color;
+                
+                // ACT party text color for readability
+                if (key === 'act') {
+                    card.style.color = '#333';
+                    card.innerHTML = `<div>${party.name}</div><input type="number" id="${key}-vote" value="${INITIAL_VOTE_SHARES[key]}" step="0.1" style="color: #333; border-bottom-color: rgba(0,0,0,0.4);"><small>정당 득표율(%)</small>`;
+                } else {
+                    card.innerHTML = `<div>${party.name}</div><input type="number" id="${key}-vote" value="${INITIAL_VOTE_SHARES[key]}" step="0.1"><small>정당 득표율(%)</small>`;
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        // --- CORE LOGIC & UI UPDATE ---
+        function runPrediction() {
+            const currentShares = {};
+            Object.keys(PARTIES).forEach(key => {
+                currentShares[key] = parseFloat(document.getElementById(`${key}-vote`).value) || 0;
+            });
+
+            // --- Step 1: Set Base Parliament Size Dynamically ---
+            const listSeats = Math.floor(Math.random() * (53 - 48 + 1)) + 48; // 48에서 53 사이의 난수
+            const BASE_PARLIAMENT_SEATS = TOTAL_ELECTORATES + listSeats; // 총 의석수는 120 ~ 124석 사이에서 결정
+
+            // --- Step 2: Estimate Electorate Seat Wins (Simplified) ---
+            const electorateSeats = {};
+            Object.keys(PARTIES).forEach(key => electorateSeats[key] = 0);
+
+            // Te Pāti Māori has a strong hold on Māori electorates
+            const maoriSeatWins = Math.min(MAORI_ELECTORATES, Math.round(currentShares['mao'] / 2.5) + 2); // Simplified assumption
+            electorateSeats['mao'] = maoriSeatWins;
             
-            // 남은 의석을 D'Hondt 방식으로 다시 배분 (오버행으로 인해 늘어난 총 의석수에 맞춰)
-            let remainingScores = [];
-            qualifiedParties.forEach(p => {
-                const recalculatedNationalPercent = totalQualifiedPercentage > 0 ? (nationalPartyPercentages[p.id] / totalQualifiedPercentage) * 100 : 0;
-                // 이미 할당된 의석을 고려하여 다음 순번부터 시작
-                for (let i = (finalSeats[p.id] || 0); i < (finalSeats[p.id] || 0) + remainingSeatsToAllocate + TOTAL_SEATS; i++) { // 충분히 생성
-                    remainingScores.push({ id: p.id, score: recalculatedNationalPercent / (i + 1) });
+            const remainingMaoriSeats = MAORI_ELECTORATES - maoriSeatWins;
+            const contestableElectorates = GENERAL_ELECTORATES + remainingMaoriSeats;
+
+            // Distribute remaining electorates based on party vote share (excluding Māori party)
+            const majorPartyVotePool = {};
+            Object.keys(currentShares).forEach(key => {
+                if (key !== 'mao') majorPartyVotePool[key] = currentShares[key];
+            });
+            const totalMajorPartyVote = Object.values(majorPartyVotePool).reduce((a, b) => a + b, 0);
+
+            if (totalMajorPartyVote > 0) {
+                 Object.keys(majorPartyVotePool).forEach(key => {
+                    const share = majorPartyVotePool[key] / totalMajorPartyVote;
+                    electorateSeats[key] += Math.round(share * contestableElectorates);
+                });
+            }
+            
+            // --- Step 3: Calculate Total Seat Entitlement (Sainte-Laguë Method) ---
+            const eligibleParties = {};
+            Object.keys(currentShares).forEach(key => {
+                if (currentShares[key] >= PARTY_VOTE_THRESHOLD || electorateSeats[key] > 0) {
+                    eligibleParties[key] = currentShares[key];
                 }
             });
-            remainingScores.sort((a, b) => b.score - a.score);
 
-            let tempFinalSeats = {...finalSeats}; // 현재까지의 할당된 의석 복사
-            let allocatedRemaining = 0;
-
-            for (let i = 0; i < remainingScores.length && allocatedRemaining < remainingSeatsToAllocate; i++) {
-                const partyId = remainingScores[i].id;
-                // 이전에 할당된 의석수보다 적은 경우에만 추가
-                if ((tempFinalSeats[partyId] || 0) < allocatedSeats[partyId]) { // 이 조건은 MMP 로직에 따라 다름
-                   // 가장 간단한 방법은 남은 의석을 가장 높은 dhondt 점수를 가진 정당에 할당하는 것
-                   tempFinalSeats[partyId] = (tempFinalSeats[partyId] || 0) + 1;
-                   allocatedRemaining++;
+            const quotients = [];
+            Object.keys(eligibleParties).forEach(key => {
+                for (let i = 0; i < BASE_PARLIAMENT_SEATS; i++) {
+                    quotients.push({
+                        party: key,
+                        quotient: eligibleParties[key] / (2 * i + 1)
+                    });
                 }
+            });
+
+            quotients.sort((a, b) => b.quotient - a.quotient);
+            
+            const totalEntitlement = {};
+            Object.keys(PARTIES).forEach(key => totalEntitlement[key] = 0);
+
+            for (let i = 0; i < BASE_PARLIAMENT_SEATS; i++) {
+                totalEntitlement[quotients[i].party]++;
             }
-            finalSeats = tempFinalSeats;
+
+            // --- Step 4: Calculate Final Seats (List seats + Overhang) ---
+            const finalSeats = {};
+            let overhangSeats = 0;
+            Object.keys(PARTIES).forEach(key => {
+                const electorateWins = electorateSeats[key] || 0;
+                const entitlement = totalEntitlement[key] || 0;
+                if (electorateWins > entitlement) {
+                    finalSeats[key] = electorateWins; // Keep all electorate seats
+                    overhangSeats += electorateWins - entitlement;
+                } else {
+                    finalSeats[key] = entitlement;
+                }
+            });
+
+            const finalParliamentSize = BASE_PARLIAMENT_SEATS + overhangSeats;
+
+            // --- Step 5: Update UI ---
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsTitle = document.getElementById('resultsTitle');
+            const seatProjectionGrid = document.getElementById('seatProjectionGrid');
+            const seatBarContainer = document.getElementById('seatBarContainer');
+            seatProjectionGrid.innerHTML = '';
+            seatBarContainer.innerHTML = '';
+
+            resultsTitle.textContent = `예상 의석수 (총 ${finalParliamentSize}석)`;
+            
+            const sortedParties = Object.keys(finalSeats).sort((a,b) => finalSeats[b] - finalSeats[a]);
+
+            sortedParties.forEach(key => {
+                const party = PARTIES[key];
+                const seats = finalSeats[key];
+                if (seats === 0) return;
+                
+                const resultCard = document.createElement("div");
+                resultCard.className = "projection-party-card";
+                resultCard.style.backgroundColor = party.color;
+                if (key === 'act') resultCard.style.color = '#333';
+
+                resultCard.innerHTML = `<div class="projection-party-name">${party.name}</div><div class="projection-seats">${seats}</div>`;
+                seatProjectionGrid.appendChild(resultCard);
+
+                const segment = document.createElement('div');
+                segment.className = 'seat-bar-segment';
+                segment.style.backgroundColor = party.color;
+                segment.style.width = `${(seats / finalParliamentSize) * 100}%`;
+                if (key === 'act') segment.style.color = '#333';
+
+                if ((seats / finalParliamentSize) > 0.05) {
+                    segment.textContent = `${party.name} ${seats}`;
+                }
+                seatBarContainer.appendChild(segment);
+            });
+            
+            resultsContainer.classList.add('visible');
         }
-
-        return finalSeats;
-    }
-
-    function runPrediction() {
-      const districtResults = document.getElementById('districtResults');
-      const seatProjectionGrid = document.getElementById('seatProjectionGrid');
-      const seatBarContainer = document.getElementById('seatBarContainer');
-
-      let nationalSeats = {}; // 최종적으로 정당별 할당될 의석수 (electorate + list)
-      let nationalTotalVotes = 0;
-      let partyNationalVotes = {}; // 각 정당의 전국 raw votes 합계
-      let nationalElectorateSeatsWonByParty = {}; // 각 정당이 지역구에서 얻은 의석수
-
-      districtResults.innerHTML = "";
-      seatProjectionGrid.innerHTML = "";
-      seatBarContainer.innerHTML = "";
-
-      const table = document.createElement("table");
-      const header = `<tr>
-        <th>구역</th>
-        ${parties.map(p => `<th>${p.name}</th>`).join("")}
-        <th>승자</th>
-      </tr>`;
-      table.innerHTML = header;
-
-      // 1. 모든 지역구의 raw votes를 합산하여 전국 총 투표수 및 정당별 전국 투표수 계산
-      //    + 지역구 의석 배분 (각 지역구는 1석)
-      districts.forEach(district => {
-        let rawVotes = {}, totalDistrictVotes = 0;
-
-        parties.forEach(p => {
-          let shouldInclude = true;
-          // 마오리 선거구에 마오리당만 득표를 얻도록 제한
-          if (p.regionOnly === "maori" && district.type !== "maori") {
-              shouldInclude = false;
-          }
-          // 다른 정당은 모든 선거구에 득표 가능 (마오리 선거구 포함)
-          // 이 부분에서 마오리 선거구의 일반 정당 득표율을 조정할 수 있음 (현재는 조정 없음)
-
-          if (shouldInclude) {
-            const noise = (Math.random() * 10 - 5);
-            const raw = Math.max(0, p.vote + noise);
-            rawVotes[p.id] = raw;
-            totalDistrictVotes += raw;
-          }
-        });
-
-        // 지역구 내에서 득표율 정규화
-        let normalizedDistrictVotes = {};
-        for (let pid in rawVotes) {
-          normalizedDistrictVotes[pid] = (rawVotes[pid] / totalDistrictVotes) * 100;
-        }
-
-        // 지역구 승자 결정 (최고 득표율)
-        let winnerInDistrict = null;
-        let maxPercentInDistrict = -1;
-        Object.keys(normalizedDistrictVotes).forEach(pid => {
-            if (normalizedDistrictVotes[pid] > maxPercentInDistrict) {
-                maxPercentInDistrict = normalizedDistrictVotes[pid];
-                winnerInDistrict = parties.find(p => p.id === pid);
-            }
-        });
-
-        // 지역구 의석 할당 (1석)
-        if (winnerInDistrict) {
-            nationalElectorateSeatsWonByParty[winnerInDistrict.id] = (nationalElectorateSeatsWonByParty[winnerInDistrict.id] || 0) + 1;
-        }
-
-        // 전국 득표율 계산을 위한 합계 업데이트
-        for (let pid in rawVotes) {
-            partyNationalVotes[pid] = (partyNationalVotes[pid] || 0) + rawVotes[pid];
-        }
-        nationalTotalVotes += totalDistrictVotes;
-
-        // 지역별 예측 테이블 행 추가
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${district.name}</td>`;
-        parties.forEach(p => {
-          const districtPercentage = (normalizedDistrictVotes[p.id] !== undefined && totalDistrictVotes > 0) ? 
-                                     normalizedDistrictVotes[p.id].toFixed(1) + '%' : '-';
-          const allocatedSeat = (winnerInDistrict && winnerInDistrict.id === p.id) ? 1 : 0;
-          row.innerHTML += `<td>${districtPercentage}<br><b>${allocatedSeat}</b></td>`;
-        });
-
-        if (winnerInDistrict) {
-            row.innerHTML += `<td class="winner"><span class="dot" style="background:${winnerInDistrict.color}"></span>${winnerInDistrict.name}</td>`;
-        } else {
-            row.innerHTML += `<td class="winner">없음</td>`;
-        }
-        table.appendChild(row);
-      });
-
-      districtResults.appendChild(table);
-
-      // 2. 전국 득표율 계산
-      const nationalPartyPercentages = {};
-      parties.forEach(p => {
-          const nationalPercent = (partyNationalVotes[p.id] / nationalTotalVotes) * 100;
-          nationalPartyPercentages[p.id] = nationalPercent;
-      });
-
-      // 3. MMP 의석 배분 (총 120석 + 오버행)
-      //    D'Hondt 방식으로 총 120석을 배분하되, 5% 봉쇄 조항 또는 지역구 1석 당선 조건을 만족하는 정당만 고려
-      //    그리고 오버행 처리 (지역구 의석이 비례 의석보다 많을 경우)
-      
-      let totalProportionalSeats = {}; // D'Hondt로 배분될 120석 기준 의석
-      let dhondtScores = [];
-
-      // 자격 있는 정당 (5% 이상 득표 또는 지역구 1석 이상 당선)
-      const qualifiedPartiesForMMP = parties.filter(p => {
-          return nationalPartyPercentages[p.id] >= ELECTORAL_THRESHOLD || (nationalElectorateSeatsWonByParty[p.id] || 0) > 0;
-      });
-
-      // 자격 있는 정당들의 총 득표율을 다시 정규화 (전체 득표율에서 자격 없는 정당 제외)
-      let totalQualifiedNationalPercentage = 0;
-      qualifiedPartiesForMMP.forEach(p => {
-          totalQualifiedNationalPercentage += nationalPartyPercentages[p.id];
-      });
-
-      // D'Hondt 점수 계산 (120석에 대해)
-      qualifiedPartiesForMMP.forEach(p => {
-          const recalculatedNationalPercent = totalQualifiedNationalPercentage > 0 ? (nationalPartyPercentages[p.id] / totalQualifiedNationalPercentage) * 100 : 0;
-          for (let i = 0; i < TOTAL_SEATS * 2; i++) { // 충분한 점수 생성
-              dhondtScores.push({ id: p.id, score: recalculatedNationalPercent / (i + 1) });
-          }
-      });
-      dhondtScores.sort((a, b) => b.score - a.score);
-
-      // 총 120석 배분 (MMP 시스템의 기본 120석)
-      for (let i = 0; i < TOTAL_SEATS; i++) {
-          if (dhondtScores[i]) {
-              totalProportionalSeats[dhondtScores[i].id] = (totalProportionalSeats[dhondtScores[i].id] || 0) + 1;
-          }
-      }
-
-      // 최종 의석수 계산 (지역구 의석 + 비례 의석 + 오버행)
-      let finalNationalSeats = {};
-      let totalOverhang = 0;
-      let totalElectorateSeatsWon = Object.values(nationalElectorateSeatsWonByParty).reduce((sum, seats) => sum + seats, 0);
-
-      qualifiedPartiesForMMP.forEach(p => {
-          const electorateSeats = nationalElectorateSeatsWonByParty[p.id] || 0;
-          const proportionalSeats = totalProportionalSeats[p.id] || 0; // D'Hondt로 배분된 의석
-
-          if (electorateSeats > proportionalSeats) {
-              // 오버행: 지역구 의석이 비례 의석보다 많으면 지역구 의석만큼 배정
-              finalNationalSeats[p.id] = electorateSeats;
-              totalOverhang += (electorateSeats - proportionalSeats);
-          } else {
-              // 비례 의석이 지역구 의석보다 많거나 같으면 비례 의석만큼 배정
-              finalNationalSeats[p.id] = proportionalSeats;
-          }
-      });
-
-      // 봉쇄 조항을 통과하지 못한 정당은 0석으로 명시적으로 설정
-      parties.forEach(p => {
-          if (!qualifiedPartiesForMMP.some(qp => qp.id === p.id)) {
-              finalNationalSeats[p.id] = 0;
-          }
-      });
-
-      // 최종적으로 할당된 의석의 총합을 확인 (오버행 포함)
-      const totalCalculatedSeats = Object.values(finalNationalSeats).reduce((sum, seats) => sum + seats, 0);
-      console.log("시뮬레이터에서 계산된 총 의석수 (MMP 적용 후):", totalCalculatedSeats);
-      console.log("총 지역구 의석수 (당선):", totalElectorateSeatsWon);
-      console.log("총 오버행 의석수:", totalOverhang);
-      console.log("예상 비례 의석수 (총 의석 - 지역구 의석):", totalCalculatedSeats - totalElectorateSeatsWon);
-
-
-      // 시트 프로젝션에 표시 (의석을 얻은 정당들만)
-      const partiesWithSeats = Object.keys(finalNationalSeats).filter(id => finalNationalSeats[id] > 0);
-
-      const sortedParties = partiesWithSeats.map(id => {
-          const party = parties.find(p => p.id === id);
-          const nationalPercentage = nationalPartyPercentages[id];
-          return {
-              party: party,
-              seats: finalNationalSeats[id],
-              percentage: nationalPercentage.toFixed(1) + '%'
-          };
-      }).sort((a, b) => b.seats - a.seats);
-
-      sortedParties.forEach(({ party, seats, percentage }) => {
-          const partyCard = document.createElement("div");
-          partyCard.className = "projection-party-card";
-          partyCard.style.backgroundColor = party.color;
-          
-          partyCard.innerHTML = `
-              <div class="projection-party-name">${party.name}</div>
-              <div class="projection-seats">${seats}</div>
-              <div class="projection-percentage">${percentage}</div>
-              <div class="projection-change"></div>
-          `;
-          seatProjectionGrid.appendChild(partyCard);
-      });
-
-      sortedParties.forEach(({ party, seats }) => {
-          const segment = document.createElement('div');
-          segment.className = 'seat-bar-segment';
-          segment.style.backgroundColor = party.color;
-          // 총 의석수는 봉쇄 조항 통과한 정당들만 합산된 의석수이므로, 비율은 정확함
-          segment.style.width = `${(seats / totalCalculatedSeats) * 100}%`; 
-          seatBarContainer.appendChild(segment);
-      });
-      
-      const select = document.querySelector('.constituency-select-container select');
-      select.value = "";
-      document.getElementById('constituencyDetail').innerHTML = "자세한 분석을 보려면 선거구를 선택하세요.";
-    }
-
-    // 페이지 로드 시 실행
-    renderPartyCards();
-    populateConstituencyDropdown();
-  </script>
-
+    </script>
 </body>
 </html>
